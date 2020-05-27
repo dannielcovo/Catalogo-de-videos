@@ -63,6 +63,7 @@ class GenderTest extends TestCase
         ]);
 
         $this->assertIsString ($gender->id);
+        $this->assertEquals(36, strlen ($gender->id));
     }
 
     public function testDelete() {
@@ -73,6 +74,7 @@ class GenderTest extends TestCase
         $gender = factory (Category::class)->create($data)->first();
         $gender->delete();
 
+        $this->assertNull (Gender::find($gender->id));
         $this->assertSoftDeleted ($gender);
     }
 }
