@@ -17,7 +17,9 @@ class GenderController extends Controller
 
     public function store(GenderRequest $request)
     {
-        return Gender::create($request->all());
+        $gender = Gender::create($request->all());
+        $gender->refresh ();
+        return $gender;
     }
 
     public function show(Gender $gender)

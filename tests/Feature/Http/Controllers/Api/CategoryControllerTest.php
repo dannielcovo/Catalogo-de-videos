@@ -19,7 +19,6 @@ class CategoryControllerTest extends TestCase
     {
         $category = factory (Category::class)->create();
         $response = $this->get(route ('categories.index'));
-
         $response
             ->assertStatus(200)
             ->assertJson ([$category->toArray ()]);
@@ -136,6 +135,17 @@ class CategoryControllerTest extends TestCase
 
     }
 
+    public function testDelete()
+    {
+        $category = factory (Category::class)->create([
+            'description' => 'name teste'
+        ]);
+
+        $response = $this->json ('DELETE', route ('categories.destroy', ['category' => $category->id]));
+
+        $response->assertStatus (204);
+
+    }
     protected function assertInvalidationRequired(TestResponse $response) {
         $response
             ->assertStatus(422)
