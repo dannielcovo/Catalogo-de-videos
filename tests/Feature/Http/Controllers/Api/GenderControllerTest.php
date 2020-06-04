@@ -4,6 +4,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Http\Requests\GenderRequest;
 use App\Models\Gender;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\TestResponse;
@@ -16,6 +17,7 @@ class GenderControllerTest extends TestCase
      *
      * @return void
      */
+    use DatabaseMigrations;
     public function testIndex()
     {
         $gender = factory (Gender::class)->create();
@@ -126,6 +128,8 @@ class GenderControllerTest extends TestCase
         $response = $this->json ('DELETE', route ('genders.destroy', ['gender' => $gender->id]));
 
         $response->assertStatus (204);
+        $this->assertNull (Gender::find($gender->id));
+        $this->assertNotNull (Gender::withTrashed()->find($gender->id));
 
     }
     private function assertInvalidationRequired(TestResponse $response) {
