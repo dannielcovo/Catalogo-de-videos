@@ -1,42 +1,30 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Tests\Stubs\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest;
-use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BasicCrudController;
+use Tests\Stubs\Models\CategoryStub;
 
-abstract class BasicCrudController extends Controller
+class CategoryControllerStub extends BasicCrudController
 {
-    protected abstract function model();
 
-    public function index()
+    private $rules = [
+        'name' => 'required|max:255',
+        'description' => 'nullable'
+    ];
+
+    public function model()
     {
-        return $this->model()::all();
+        return CategoryStub::class;
     }
 
-//    public function store(CategoryRequest $request)
-//    {
-//        $category = Category::create($request->all());
-//        $category->refresh ();
-//        return $category;
-//    }
-//
-//    public function show(Category $category) //route model binding
-//    {
-//        return $category;
-//    }
-//
-//    public function update(CategoryRequest $request, Category $category)
-//    {
-//        $category->update($request->all());
-//        return $category;
-//    }
-//
-//    public function destroy(Category $category)
-//    {
-//        $category->delete ();
-//        return response ()->noContent (); // 204 - no content
-//    }
+    protected function rulesUpdate()
+    {
+        return $this->rules;
+    }
+
+    protected function rulesStore()
+    {
+        return $this->rules;
+    }
 }

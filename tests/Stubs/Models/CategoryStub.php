@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Models;
+namespace Tests\Stubs\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Schema\Blueprint;
 
-class Category extends Model
+class CategoryStub extends Model
 {
     protected $table = 'category_stubs';
     protected $fillable = ['name', 'description', 'is_active'];
 
     public static function createTable()
     {
-        \Schema::create('categories', function (Blueprint $table) {
+        \Schema::create('category_stubs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string ('name');
             $table->text ('description')->nullable ();

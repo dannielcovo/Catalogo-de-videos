@@ -16,4 +16,3 @@ _ide_helper_models.php
 .phpstorm.meta.php
 .docker/dbdata
 /.docker/dbdata/
-/.docker/dbdata/

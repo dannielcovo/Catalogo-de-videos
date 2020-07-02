@@ -5,6 +5,7 @@ cp .env.example .env
 cp .env.testing.example .env.testing
 composer install
 php artisan key:generate
+php artisan config:cache
 php artisan migrate
 
 php-fpm
