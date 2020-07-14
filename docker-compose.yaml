@@ -42,7 +42,8 @@ services:
         ports:
             - "33006:3306"
         volumes:
-            - ./.docker/dbdata:/var/lib/mysql
+#             - ./.docker/dbdata:/var/lib/mysql
+            - mysql_data:/var/lib/postgresql/data
             - ./.docker/mysql:/docker-entrypoint-initdb.d
         environment:
 #             - MYSQL_DATABASE=code_micro_videos
@@ -58,7 +59,12 @@ services:
             - 6379
         networks:
             - app-network
+volumes:
+  mysql_data:
+    external: true
 
 networks:
     app-network:
         driver: bridge
+
+#rodar no terminal :  docker volume create mysql_data

@@ -4,7 +4,6 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\CastMember;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\TestResponse;
 use Tests\TestCase;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
@@ -24,18 +23,18 @@ class CastMemberControllerTest extends TestCase
 
     public function testIndex()
     {
-        $response = $this->get(route ('cast_members.index'));
+        $response = $this->get(route('cast_members.index'));
         $response
             ->assertStatus(200)
-            ->assertJson ([$this->cast_member->toArray ()]);
+            ->assertJson([$this->cast_member->toArray()]);
     }
 
     public function testShow()
     {
-        $response = $this->get(route ('cast_members.show', ['cast_member' => $this->cast_member->id]));
+        $response = $this->get(route('cast_members.show', ['cast_member' => $this->cast_member->id]));
         $response
             ->assertStatus(200)
-            ->assertJson($this->cast_member->toArrays());
+            ->assertJson($this->cast_member->toArray());
     }
 
     //ver se aparece erro de validacao dos dados
@@ -94,8 +93,8 @@ class CastMemberControllerTest extends TestCase
     {
         $response = $this->json ('DELETE', route ('cast_members.destroy', ['cast_member' => $this->cast_member->id]));
         $response->assertStatus (204);
-        $this->assertNull (Category::find ($this->cast_member->id));
-        $this->assertNotNull (Category::withTrashed()->find($this->cast_member->id));
+        $this->assertNull (CastMember::find ($this->cast_member->id));
+        $this->assertNotNull (CastMember::withTrashed()->find($this->cast_member->id));
 
     }
 

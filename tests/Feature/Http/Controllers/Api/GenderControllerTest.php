@@ -2,11 +2,15 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\GenderController;
+use App\Models\Category;
 use App\Models\Gender;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
+use Illuminate\Http\Request;
 
 class GenderControllerTest extends TestCase
 {
@@ -49,7 +53,11 @@ class GenderControllerTest extends TestCase
 
     public function testInvalidationData(){
 
-        $data = ['name' => ''];
+        $data = [
+            'name' => '',
+            'categories_id' => '',
+        ];
+
         $this->assertInvalidationInUpdateAction($data, 'required');
         $this->assertInvalidationInStoreAction($data, 'required');
 
@@ -60,35 +68,162 @@ class GenderControllerTest extends TestCase
         $data = ['is_active' => 'ativo'];
         $this->assertInvalidationInUpdateAction($data, 'boolean');
         $this->assertInvalidationInStoreAction($data, 'boolean');
+
+        $data = [
+            'categories_id' => 'c',
+        ];
+        $this->assertInvalidationInUpdateAction($data, 'array');
+        $this->assertInvalidationInStoreAction($data, 'array');
+
+        $data = [
+            'categories_id' => [100],
+        ];
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+        $this->assertInvalidationInStoreAction($data, 'exists');
+
+        //test deleted categoyr
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $data = [
+            'categories_id' => [$category->id],
+        ];
+
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+        $this->assertInvalidationInStoreAction($data, 'exists');
     }
 
     public function testStore()
     {
+        $categoryId = factory(Category::class)->create()->id;
         $data = ['name' => 'New Gender'];
 
-        $response = $this->assertStore($data, $data + ['is_active' => true, 'deleted_at' => null]);
+        $response = $this->assertStore(
+            $data + ['categories_id' => [$categoryId]],
+            $data + ['is_active' => true, 'deleted_at' => null]);
+
         $response->assertJsonStructure([
             'created_at', 'updated_at'
         ]);
+
+        $this->assertHasCategory($response->json('id'), $categoryId);
 
         $data = [
             'name' => 'test',
             'is_active' => false,
         ];
-
-        $this->assertStore($data, $data + ['is_active' => false]);
+        $this->assertStore(
+            $data + ['categories_id' => [$categoryId]],
+            $data + ['is_active' => false]);
     }
 
     public function testUpdate()
     {
+        $categoryId = factory(Category::class)->create()->id;
         $data = [
             'name' => 'Teste update',
             'is_active' => true,
         ];
 
-        $response = $this->assertUpdate($data, $data + ['deleted_at' => null]);
+        $response = $this->assertUpdate(
+            $data + ['categories_id' => [$categoryId]],
+            $data + ['deleted_at' => null]
+        );
         $response->assertJsonStructure([
             'created_at', 'updated_at'
+        ]);
+        $this->assertHasCategory($response->json('id'), $categoryId);
+    }
+
+    public function testRollbackStore()
+    {
+        $controller = \Mockery::mock(GenderController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $controller
+            ->shouldReceive('validate')
+            ->withAnyArgs()
+            ->andReturn([
+                'name' => 'test',
+            ]);
+
+        $controller
+            ->shouldReceive('rulesStore')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        $controller
+            ->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+
+        $request = \Mockery::mock(Request::class);
+
+        $hasError = false;
+
+        //tem que cair no catch para dar certo
+        try{
+            $controller->store($request);
+        } catch(TestException $exception) {
+            $this->assertCount(1, Gender::all());
+            $hasError = true;
+        }
+
+        //se caiu aqui é que deu excessao e deu certo
+        $this->assertTrue($hasError);
+    }
+
+    public function testRollbackUpdate()
+    {
+        $controller = \Mockery::mock(GenderController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        //mock do find all para ter uma instancia do update
+        $controller
+            ->shouldReceive('findOrFail')
+            ->withAnyArgs()
+            ->andReturn($this->gender);
+
+        $controller
+            ->shouldReceive('validate')
+            ->withAnyArgs()
+            ->andReturn([
+                'name' => 'test',
+            ]);
+
+        $controller
+            ->shouldReceive('rulesUpdate')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        $controller
+            ->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+
+        $request = \Mockery::mock(Request::class);
+
+        $hasError = false;
+
+        //tem que cair no catch para dar certo
+        try{
+            $controller->update($request, 1); // any param
+        } catch(TestException $exception) {
+            $this->assertCount(1, Gender::all());
+            $hasError = true;
+        }
+
+        //se caiu aqui é que deu excessao e deu certo
+        $this->assertTrue($hasError);
+    }
+
+
+    protected function assertHasCategory($genderId, $categoryId)
+    {
+        $this->assertDatabaseHas('category_gender', [
+           'gender_id' => $genderId,
+            'category_id' => $categoryId
         ]);
     }
 

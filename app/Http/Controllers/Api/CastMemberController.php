@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\BasicCrudController;
 use App\Models\CastMember;
-use Illuminate\Http\Request;
 
 class CastMemberController extends BasicCrudController
 {
