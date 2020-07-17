@@ -218,6 +218,49 @@ class GenderControllerTest extends TestCase
         $this->assertTrue($hasError);
     }
 
+    public function testSyncCategories()
+    {
+        $categoriesId = factory(Category::class, 3)->create()->pluck('id')->toArray();
+
+        $sendData = [
+            'name' => 'test',
+            'categories_id' => [$categoriesId[0]]
+        ];
+
+        $response = $this->json('POST', $this->routeStore(), $sendData);
+        $this->assertDatabaseHas('category_gender', [
+            'category_id' => $categoriesId[0],
+            'gender_id' => $response->json('id')
+        ]);
+
+        $sendData = [
+            'name' => 'test',
+            'categories_id' => [$categoriesId[1], $categoriesId[2]]
+        ];
+
+        //test update - action
+        $response = $this->json(
+            'PUT',
+           route('genders.update', ['gender' => $response->json('id')]),
+            $sendData
+        );
+
+        //assert data categories is not in database
+        $this->assertDatabaseMissing('category_gender', [
+            'category_id' => $categoriesId[0],
+            'gender_id' => $response->json('id')
+        ]);
+
+        //assert data categories in database
+        $this->assertDatabaseHas('category_gender', [
+            'category_id' => $categoriesId[1],
+            'gender_id' => $response->json('id')
+        ]);
+        $this->assertDatabaseHas('category_gender', [
+            'category_id' => $categoriesId[2],
+            'gender_id' => $response->json('id')
+        ]);
+    }
 
     protected function assertHasCategory($genderId, $categoryId)
     {

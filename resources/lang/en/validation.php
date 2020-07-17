@@ -116,7 +116,7 @@ return [
     'uploaded' => 'The :attribute failed to upload.',
     'url' => 'The :attribute format is invalid.',
     'uuid' => 'The :attribute must be a valid UUID.',
-
+    'gender_has_categories' => 'A gender ID must be related at least a categorie_ID',
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
