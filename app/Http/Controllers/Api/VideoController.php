@@ -32,7 +32,8 @@ class VideoController extends BasicCrudController
                 'required',
                 'array',
                 'exists:genders,id,deleted_at,NULL'
-            ]
+            ],
+            'video_file' => 'mimetypes:video/mp4|max:12' //max:10240 = max 10 MB.
         ];
     }
 
@@ -42,16 +43,7 @@ class VideoController extends BasicCrudController
     {
         $this->addRuleIfGenderHasCategories($request);
         $validateData = $this->validate($request, $this->rulesStore());
-        $self = $this;
-        /* @var Video $obj*/
-        $obj = DB::transaction(function() use ($request, $validateData, $self){
-            $obj = $this->model()::create($validateData);
-
-            //create relationship
-            $self->handleRelations($obj, $request);
-            return $obj;
-        });
-
+        $obj = $this->model()::create($validateData);
         $obj->refresh();
         return $obj;
     }
@@ -59,18 +51,9 @@ class VideoController extends BasicCrudController
     public function update(Request $request, $id)
     {
         $obj = $this->findOrFail($id);
-
-        //validate GendersHAsCategoriesRules
         $this->addRuleIfGenderHasCategories($request);
         $validateData = $this->validate($request, $this->rulesUpdate());
-
-        $self = $this;
-        /* @var Video $obj*/
-        $obj =  DB::transaction(function() use($obj, $request, $validateData, $self){
-            $obj->update($validateData);
-            $self->handleRelations($obj, $request);
-            return $obj;
-        });
+        $obj->update($validateData);
 
         return $obj;
     }
@@ -84,13 +67,6 @@ class VideoController extends BasicCrudController
         $this->rules['genders_id'][] = new GendersHasCategoriesRule(
             $categoriesId
         );
-    }
-
-    protected function handleRelations($video, Request $request)
-    {
-        // sincroniza o array com minha tabela
-        $video->categories()->sync($request->get('categories_id'));
-        $video->genders()->sync($request->get('genders_id'));
     }
 
     protected function model()

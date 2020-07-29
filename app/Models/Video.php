@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Traits\UploadFiles;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
 
 class Video extends Model
 {
-    use SoftDeletes, Uuid;
+    use SoftDeletes, Uuid, UploadFiles;
 
     const NO_RATING = 'L';
     const RATING_LIST = [self::NO_RATING, '10', '12', '14', '16', '18'];
@@ -32,6 +34,60 @@ class Video extends Model
     ];
 
     public $incrementing = false;
+    public static $fileFields = ['video_file', 'thumb_file'];
+
+    //sobrescrever store
+    public static function create(array $attributes = [])
+    {
+        $files = self::extractFiles($attributes);
+        try {
+            \DB::beginTransaction();
+            /** @var Video $obj */
+            $obj = static::query()->create($attributes); //filme
+            static::handleRelations($obj, $attributes);
+            $obj->uploadFiles($files);
+            //uploads aqui
+            \DB::commit();
+            return $obj;
+        } catch (\Exception $e) {
+            if(isset($obj)) {
+                //excluir arquivos uploads
+            }
+            \DB::rollBack();
+            throw $e;
+        }
+    }
+
+    // sobrescrever updated
+    public function update(array $attributes = [], array $options = [])
+    {
+        try {
+            \DB::beginTransaction();
+            $saved = parent::update($attributes, $options);
+            static::handleRelations($this, $attributes);
+            if($saved) {
+                //uploads aqui
+            }
+            \DB::commit();
+            return $saved;
+        } catch (\Exception $e) {
+            //excluir arquivos uploads
+            \DB::rollBack();
+            throw $e;
+        }
+    }
+
+    //sendo estatico precisa receber o Video
+    public static function handleRelations(Video $video, array $attributes)
+    {
+        if(isset($attributes['categories_id'])) {
+            $video->categories()->sync($attributes['categories_id']);
+        }
+
+        if(isset($attributes['genders_id'])) {
+            $video->genders()->sync($attributes['genders_id']);
+        }
+    }
 
     public function categories()
     {
@@ -41,5 +97,10 @@ class Video extends Model
     public function genders()
     {
         return $this->belongsToMany(Gender::class)->withTrashed();
+    }
+
+    protected function uploadDir()
+    {
+        return $this->id;
     }
 }
