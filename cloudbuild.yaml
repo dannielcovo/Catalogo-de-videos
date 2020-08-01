@@ -2,7 +2,7 @@ steps:
 
 - name: "gcr.io/cloud-builders/gcloud"
   args:
- -    - kms
+      - kms
       - decrypt
       - --ciphertest-file=./storage/credentials/google/service-account-storage.json
       - --plaintext-file=./storage/credentials/google/service-account-storage.json
