@@ -33,13 +33,13 @@ abstract class BasicCrudController extends Controller
         return $this->model()::where($keyName, $id)->firstOrFail();
     }
 
-    protected function show($id)
+    public function show($id)
     {
         $obj = $this->findOrFail($id);
         return $obj;
     }
 
-    protected function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $obj = $this->findOrFail($id);
         $validateData = $this->validate($request, $this->rulesUpdate());
@@ -47,7 +47,7 @@ abstract class BasicCrudController extends Controller
         return $obj;
     }
 
-    protected function destroy($id)
+    public function destroy($id)
     {
         $obj = $this->findOrFail($id);
         $obj->delete();

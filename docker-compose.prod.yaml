@@ -4,6 +4,12 @@ services:
 
     app:
         build: .
+        environment:
+            - GOOGLE_CLOUD_PROJECT_ID=micro-servicos-project-1
+            - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+            - GOOGLE_CLOUD_STORAGE_BUCKET=code_micro_videos_danniel
+            - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/code_micro_videos_danniel
+
         container_name: app
         volumes:
             - .:/var/www

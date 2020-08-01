@@ -81,7 +81,8 @@ class GendersHasCategoriesRulesUnitTest extends TestCase
                 ['category_id' => 1],
                 ['category_id' => 2]
             ]));
-        $this->assertFalse($rule->passes('', [1]));
+
+        $this->assertTrue($rule->passes('', [1]));
 
         // two equuals categories
         $rule = $this->createRuleMock([1, 2]);

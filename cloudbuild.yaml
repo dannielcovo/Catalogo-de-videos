@@ -1,5 +1,6 @@
 steps:
-# das
+
+- id: "Gerando service-account-docker.json"
 - name: "gcr.io/cloud-builders/gcloud"
   args:
       - kms
@@ -39,14 +40,6 @@ steps:
 - id: "Rodando key:generate"
   name: 'gcr.io/cloud-builders/docker'
   args: ['exec', '-t', 'app', 'php','/var/www/artisan', 'key:generate']
-
-- id: "Rodando cache:clear"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'app', 'php','/var/www/artisan', 'cache:clear']
-
-- id: "Rodando cache:clear"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'app', 'php','/var/www/artisan', 'config:cache']
 
 - id: "Rodando migrations"
   name: 'gcr.io/cloud-builders/docker'
