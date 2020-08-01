@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Models\Traits;
+namespace Tests\Unit\Models\Video;
 
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,7 +19,7 @@ class UploadFilesUnitTest extends TestCase
 
     public function testUploadFile()
     {
-        \Storage::fake(); //vai criar dentro de framework/testing
+//        \Storage::fake(); //vai criar dentro de framework/testing
         //upload file fake
         $file = UploadedFile::fake()->create('video.mp4');
         $this->obj->uploadFile($file);
@@ -64,6 +64,22 @@ class UploadFilesUnitTest extends TestCase
         $this->obj->deleteFiles([$file1->hashName(), $file2]);
         \Storage::assertMissing("1/{$file1->hashName()}");
         \Storage::assertMissing("1/{$file2->hashName()}");
+    }
+
+    //UploadFiles deleteOldfiles
+    public function testDeleteOld()
+    {
+        \Storage::fake();
+        $file1 = UploadedFile::fake()->create('video.mp4')->size(1);
+        $file2 = UploadedFile::fake()->create('video.mp4')->size(1);
+        $this->obj->uploadFiles([$file1, $file2]);
+        $this->obj->deleteOldfiles();
+        $this->assertCount(2, \Storage::allFiles());
+
+        $this->obj->oldFiles = [$file1->hashName()];
+        $this->obj->deleteOldfiles();
+        \Storage::assertMissing("1/{$file1->hashName()}");
+        \Storage::assertExists("1/{$file2->hashName()}");
     }
 
     public function testExtractFiles()

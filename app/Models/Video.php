@@ -16,12 +16,14 @@ class Video extends Model
     const RATING_LIST = [self::NO_RATING, '10', '12', '14', '16', '18'];
 
     protected $fillable = [
-      'title',
-      'description',
-      'year_launched',
-      'opened',
-      'rating',
-      'duration',
+        'title',
+        'description',
+        'year_launched',
+        'opened',
+        'rating',
+        'duration',
+        'video_file',
+        'thumb_file'
     ];
 
     protected $dates = ['deleted_at'];
@@ -51,7 +53,7 @@ class Video extends Model
             return $obj;
         } catch (\Exception $e) {
             if(isset($obj)) {
-                //excluir arquivos uploads
+                $obj->deleteFiles($files);
             }
             \DB::rollBack();
             throw $e;
@@ -61,17 +63,25 @@ class Video extends Model
     // sobrescrever updated
     public function update(array $attributes = [], array $options = [])
     {
+        $files = self::extractFiles($attributes);
+
+        // PHP ~/tmp - renomeia
         try {
             \DB::beginTransaction();
             $saved = parent::update($attributes, $options);
             static::handleRelations($this, $attributes);
             if($saved) {
-                //uploads aqui
+                $this->uploadFiles($files);
             }
+
             \DB::commit();
+
+            if($saved && count($files)) {
+                $this->deleteOldfiles();
+            }
             return $saved;
         } catch (\Exception $e) {
-            //excluir arquivos uploads
+            $this->deleteFiles($files);
             \DB::rollBack();
             throw $e;
         }

@@ -33,7 +33,7 @@ class CategoryControllerTest extends TestCase
         $response = $this->get(route ('categories.show', ['category' => $this->category->id]));
         $response
             ->assertStatus(200)
-            ->assertJson($this->category->toArrays());
+            ->assertJson($this->category->toArray());
     }
 
     //ver se aparece erro de validacao dos dados

@@ -52,7 +52,7 @@ class BasicCrudControllerTest extends TestCase
         $request = \Mockery::mock(Request::class);
         $request
             ->shouldReceive('all')
-            ->oncd()
+            ->once()
             ->andReturn(['name' => 'name_changed', 'description' => 'description_changed']);
 
         $result = $this->controller->update($request, $category->id);

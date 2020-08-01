@@ -33,7 +33,8 @@ class VideoController extends BasicCrudController
                 'array',
                 'exists:genders,id,deleted_at,NULL'
             ],
-            'video_file' => 'mimetypes:video/mp4|max:12' //max:10240 = max 10 MB.
+            'video_file' => 'mimetypes:video/mp4|max:12', //max:10240 = max 10 MB.
+            'thumb_file' => 'max:15' //max:10240 = max 10 MB.
         ];
     }
 
@@ -54,7 +55,7 @@ class VideoController extends BasicCrudController
         $this->addRuleIfGenderHasCategories($request);
         $validateData = $this->validate($request, $this->rulesUpdate());
         $obj->update($validateData);
-
+        $obj->refresh();
         return $obj;
     }
 
