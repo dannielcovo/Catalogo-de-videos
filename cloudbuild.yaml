@@ -1,6 +1,5 @@
 steps:
 
-- id: "Gerando service-account-docker.json"
 - name: "gcr.io/cloud-builders/gcloud"
   args:
       - kms

@@ -3,7 +3,7 @@
 namespace Tests\Unit\Rules;
 
 use App\Rules\GendersHasCategoriesRule;
-use Cassandra\Collection;
+
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 

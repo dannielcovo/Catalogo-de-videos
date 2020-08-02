@@ -27,7 +27,6 @@ trait UploadFiles
             $model->oldFiles = array_map(function ($fileField) use ($model){
                 return $model->getOriginal($fileField); // get value of attribute $filesFiltered and return value not null
             }, $filesFiltered);
-
         });
     }
 

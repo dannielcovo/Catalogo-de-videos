@@ -67,26 +67,14 @@ class VideoTest extends TestCase
                 'duration',
                 'video_file',
                 'thumb_file',
+                'trailer_file',
+                'banner_file',
                 'deleted_at',
                 'created_at',
                 'updated_at'
             ],
             $videosKey
         );
-    }
-
-    public function testCreateWithBasicFields()
-    {
-        $video = Video::create($this->sendData);
-        $video->refresh();
-
-        $this->assertEquals(36, strlen($video->id));
-        $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', $this->sendData + ['opened' => false]);
-
-        $video = Video::create($this->sendData + ['opened' => true]);
-        $this->assertTrue($video->opened);
-        $this->assertDatabaseHas('videos', $this->sendData + ['opened' => true]);
     }
 
     public function testCreateWithRelations()

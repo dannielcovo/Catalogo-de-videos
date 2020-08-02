@@ -39,6 +39,8 @@ class VideoCrudTest extends BaseVideoTestCase
                 'deleted_at',
                 'video_file',
                 'thumb_file',
+                'trailer_file',
+                'banner_file',
                 'created_at',
                 'updated_at'
             ],
@@ -52,6 +54,11 @@ class VideoCrudTest extends BaseVideoTestCase
         $video->refresh();
 
         $this->assertEquals(36, strlen($video->id));
+        $this->assertFalse($video->opened);
+        $this->assertDatabaseHas('videos', $this->sendData + ['opened' => false]);
+
+        $video = Video::create($this->sendData);
+        $video->refresh();
         $this->assertFalse($video->opened);
         $this->assertDatabaseHas('videos', $this->sendData + ['opened' => false]);
 
