@@ -30,6 +30,12 @@ trait UploadFiles
         });
     }
 
+    public function relativeFilePath($value)
+    {
+        return "{$this->uploadDir()}/{$value}"; // caminho da pasta + valor
+    }
+
+
     /**
      * @param UploadedFile[] $files
      */
@@ -80,6 +86,11 @@ trait UploadFiles
             }
         }
         return $files;
+    }
+
+    protected function getFileUrl($filename)
+    {
+        return \Storage::url($this->relativeFilePath($filename));
     }
 
     protected function routeStore()

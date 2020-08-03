@@ -318,6 +318,7 @@
       array (
         'driver' => 'local',
         'root' => '/opt/project/code-micro-videos/storage/app/public/videos',
+        'url' => 'http://localhost/storage/videos',
       ),
       'public' => 
       array (

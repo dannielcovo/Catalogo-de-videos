@@ -9,7 +9,7 @@ return [
     |
     | Here you may specify the default filesystem disk that should be used
     | by the framework. The "local" disk, as well as a variety of cloud
-    | based disks are available to your application. Just store away!
+    | based disks are available to y    our application. Just store away!
     |
     */
 
@@ -51,6 +51,7 @@ return [
         'video_local' => [
             'driver' => 'local',
             'root' => storage_path('app/public/videos'),
+            'url' => env('APP_URL') . '/storage/videos',
         ],
 
         'public' => [

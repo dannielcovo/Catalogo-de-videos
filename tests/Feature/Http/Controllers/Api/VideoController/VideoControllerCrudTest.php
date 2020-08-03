@@ -8,6 +8,7 @@ use Tests\Traits\TestValidations;
 use App\Models\Category;
 use App\Models\Gender;
 use App\Models\Video;
+use Illuminate\Support\Arr;
 
 class VideoControllerCrudTest extends BaseVideoControllerTestCase
 {
@@ -192,6 +193,11 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             );
         }
     }
+
+//    public function testSaveWithoutFiles()
+//    {
+//        $testData = Arr::except($this->sendData, ['categories_id', 'gender_id']);
+//    }
 
     public function testDestroy()
     {
