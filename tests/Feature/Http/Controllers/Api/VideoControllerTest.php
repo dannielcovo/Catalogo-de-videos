@@ -26,6 +26,7 @@ class VideoControllerTest extends TestCase
      */
     private $video;
     private $sendData;
+    private $serializedFields;
 
     protected function setUp(): void
     {
@@ -40,12 +41,38 @@ class VideoControllerTest extends TestCase
             'rating' => Video::RATING_LIST[1],
             'duration' => 90,
         ];
+
+        $this->serializedFields = [
+            'id',
+            'title',
+            'description',
+            'year_launched',
+            'rating',
+            'duration',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'video_file',
+            'thumb_file',
+            'banner_file',
+            'trailer_file',
+        ];
     }
 
     public function testIndex()
     {
         $response = $this->get(route('videos.index'));
-        $response->assertStatus(200)->assertJson([$this->video->first()->toArray()]);
+        $response->assertStatus(200)
+            ->assertJson([
+                'meta' => ['per_page' => 15],
+            ])
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => $this->serializedFields
+                ],
+                'meta' => [],
+                'links' => []
+            ]);
     }
 
     //    public function testRolbackStore()
@@ -229,11 +256,6 @@ class VideoControllerTest extends TestCase
     //            'video_id' => $response->json('id')
     //        ]);
     //    }
-    public function testShow()
-    {
-        $response = $this->get(route('videos.show', ['video' => $this->video->id]));
-        $response->assertStatus(200)->assertJson($this->video->toArray());
-    }
 
     public function testInvalidationDataRequired()
     {
@@ -392,16 +414,14 @@ class VideoControllerTest extends TestCase
         foreach ($data as $key => $value) {
             $response = $this->assertStore($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+               'data' => $this->serializedFields
             ]);
             $response = $this->assertUpdate($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+                'data' => $this->serializedFields
             ]);
-            $this->assertHasCategory($response->json('id'), $value['send_data']['categories_id'][0]);
-            $this->assertHasGender($response->json('id'), $value['send_data']['genders_id'][0]);
+            $this->assertHasCategory($response->json('data.id'), $value['send_data']['categories_id'][0]);
+            $this->assertHasGender($response->json('data.id'), $value['send_data']['genders_id'][0]);
         }
     }
 

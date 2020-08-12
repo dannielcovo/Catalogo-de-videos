@@ -19,23 +19,67 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
      * @return void
      */
     use DatabaseMigrations;
+    private $serializedFields = [
+        'id',
+        'title',
+        'description',
+        'year_launched',
+        'rating',
+        'opened',
+        'thumb_file_url',
+        'banner_file_url',
+        'video_file_url',
+        'trailer_file_url',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'categories' => [
+            '*' => [
+                'id',
+                'name',
+                'description',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ]
+        ],
+        'genders' => [
+            '*' => [
+                'id',
+                'name',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ]
+        ]
+    ];
 
     public function testIndex()
     {
-        $response  = $this->get(route ('videos.index'));
-
-        $response
-            ->assertStatus(200)
-            ->assertJson([$this->video->first()->toArray()]);
+        $response = $this->get(route('videos.index'));
+        $response->assertStatus(200)
+            ->assertJson([
+                'meta' => ['per_page' => 15],
+            ])
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => $this->serializedFields
+                ],
+                'meta' => [],
+                'links' => []
+            ]);
     }
 
     public function testShow()
     {
         $response = $this->get(route('videos.show', ['video' => $this->video->id]));
-
-        $response
-            ->assertStatus(200)
-            ->assertJson($this->video->toArray());
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                    'data' => $this->serializedFields
+                ]
+            );
     }
 
     public function testInvalidationDataRequired(){
@@ -141,8 +185,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
                 'test_data' => $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' => $this->sendData +
-                    [
+                'send_data' => $this->sendData + [
                         'opened' => true,
                         'categories_id' => [$category->id],
                         'genders_id' => [$gender->id],
@@ -150,15 +193,13 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
                 'test_data' => $this->sendData + ['opened' => true]
             ],
             [
-                'send_data' => $this->sendData +
-                    [
+                'send_data' => $this->sendData + [
                         'rating' => Video::RATING_LIST[1],
                         'categories_id' => [$category->id],
                         'genders_id' => [$gender->id],
                     ],
                 'test_data' => $this->sendData + ['rating' => Video::RATING_LIST[1]]
             ],
-
         ];
 
         foreach($data as $key => $value) {
@@ -168,8 +209,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             );
 
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+                'data' => $this->serializedFields
             ]);
 
             $response = $this->assertUpdate(
@@ -178,8 +218,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             );
 
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+                'data' => $this->serializedFields
             ]);
 
             $this->assertHasCategory(

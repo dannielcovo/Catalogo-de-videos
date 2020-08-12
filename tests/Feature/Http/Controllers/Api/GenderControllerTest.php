@@ -3,18 +3,21 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\GenderController;
+use App\Http\Resources\CategoryResource;
+use App\Http\Resources\GenderResource;
 use App\Models\Category;
 use App\Models\Gender;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\Exceptions\TestException;
 use Tests\TestCase;
+use Tests\Traits\TestResources;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 use Illuminate\Http\Request;
 
 class GenderControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestResources;
     /**
      * A basic feature test example.
      *
@@ -26,6 +29,25 @@ class GenderControllerTest extends TestCase
      * @var Gender $gender
      */
     private $gender;
+    private $serializedFields = [
+        'id',
+        'name',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'categories' => [
+            '*' => [
+                'id',
+                'name',
+                'description',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at'
+            ]
+        ]
+    ];
 
     protected function setUp(): void
     {
@@ -40,7 +62,24 @@ class GenderControllerTest extends TestCase
         $this->gender->refresh();
         $response
             ->assertStatus(200)
-            ->assertJson([$this->gender->first()->toArray ()]);
+            ->assertJson([ // test $paginationSize on BasicCrudController
+                'meta' => ['per_page' => 15],
+            ])
+            ->assertJsonStructure([ // test paginator
+                'data' => [
+                    '*' => $this->serializedFields // verifica se dentro de cada chave tenho essa estrutura
+                ],
+                'meta' => [],
+                'links' => [],
+            ]);
+
+        //passing a collection
+        $resource = GenderResource::collection(collect([$this->gender]));
+        $this->assertResource($response, $resource);
+
+        //passing simple array
+        $resource = new GenderResource([$this->gender]);
+        $this->assertResource($response, $resource);
     }
 
     public function testShow()
@@ -48,7 +87,9 @@ class GenderControllerTest extends TestCase
         $response = $this->get(route ('genders.show', ['gender' => $this->gender->id]));
         $response
             ->assertStatus(200)
-            ->assertJson ($this->gender->toArray());
+            ->assertJsonStructure([
+                'data' => $this->serializedFields
+            ]);
     }
 
     public function testInvalidationData(){
@@ -102,15 +143,16 @@ class GenderControllerTest extends TestCase
             $data + ['is_active' => true, 'deleted_at' => null]);
 
         $response->assertJsonStructure([
-            'created_at', 'updated_at'
+            'data' => $this->serializedFields
         ]);
 
-        $this->assertHasCategory($response->json('id'), $categoryId);
+        $this->assertHasCategory($response->json('data.id'), $categoryId);
 
         $data = [
             'name' => 'test',
             'is_active' => false,
         ];
+
         $this->assertStore(
             $data + ['categories_id' => [$categoryId]],
             $data + ['is_active' => false]);
@@ -129,9 +171,9 @@ class GenderControllerTest extends TestCase
             $data + ['deleted_at' => null]
         );
         $response->assertJsonStructure([
-            'created_at', 'updated_at'
+            'data' => $this->serializedFields
         ]);
-        $this->assertHasCategory($response->json('id'), $categoryId);
+        $this->assertHasCategory($response->json('data.id'), $categoryId);
     }
 
     public function testRollbackStore()
@@ -230,7 +272,7 @@ class GenderControllerTest extends TestCase
         $response = $this->json('POST', $this->routeStore(), $sendData);
         $this->assertDatabaseHas('category_gender', [
             'category_id' => $categoriesId[0],
-            'gender_id' => $response->json('id')
+            'gender_id' => $response->json('data.id')
         ]);
 
         $sendData = [
@@ -241,24 +283,24 @@ class GenderControllerTest extends TestCase
         //test update - action
         $response = $this->json(
             'PUT',
-           route('genders.update', ['gender' => $response->json('id')]),
+           route('genders.update', ['gender' => $response->json('data.id')]),
             $sendData
         );
 
         //assert data categories is not in database
         $this->assertDatabaseMissing('category_gender', [
             'category_id' => $categoriesId[0],
-            'gender_id' => $response->json('id')
+            'gender_id' => $response->json('data.id')
         ]);
 
         //assert data categories in database
         $this->assertDatabaseHas('category_gender', [
             'category_id' => $categoriesId[1],
-            'gender_id' => $response->json('id')
+            'gender_id' => $response->json('data.id')
         ]);
         $this->assertDatabaseHas('category_gender', [
             'category_id' => $categoriesId[2],
-            'gender_id' => $response->json('id')
+            'gender_id' => $response->json('data.id')
         ]);
     }
 

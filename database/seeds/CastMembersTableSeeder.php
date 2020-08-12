@@ -11,6 +11,8 @@ class CastMembersTableSeeder extends Seeder
      */
     public function run()
     {
+        //get root do filesystem
+        $dir = \Storage::getDriver()->getAdapter()->getPathPrefix();
         factory(\App\Models\CastMember::class, 20)->create();
     }
 }
